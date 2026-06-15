@@ -3,21 +3,49 @@ Nextflow pipeline for generating reference databases for amplicon sequences.
 
 :construction: *Caution, this package is still under development and has not been thoroughly tested. Workflow commands and modes of operation may change.* :construction:
 
+## Requirements
+
+- [Nextflow](https://www.nextflow.io/) (_>= 23.04_)
+- [Cond-forge](https://conda-forge.org/) (_Miniforge/Mambaforge recommended_)
+
+The pipeline will automatically download and create the required QIIME 2 conda environment on first run. No manual QIIME 2 installation is needed.
+
 ## How to install and run
 
-**Install nextflow**
+### Install nextflow
+
+Nextflow can be installed as standalone or via conda.
+
+**Standalone installation (recommended)**
+
+```bash
+java -version
+curl -s https://get.nextflow.io | bash
+mv nextflow ~/bin/
 ```
+
+**Conda installation**
+
+```bash
 conda create -n nextflow -c conda-forge -c bioconda -c defaults nextflow
 conda activate nextflow
 ```
 
-**Clone the repo**
-```
+>[!TIP]
+> For more info on nextflow please visit [Nextflow documentation](https://docs.seqera.io/nextflow/?__hstc=247481240.43f4da109a9544f90ea47ec4dba6e0f8.1767891341744.1781221442473.1781497907630.12&__hssc=247481240.1.1781497907630&__hsfp=7c1ebc5cd52a44b32f139dab9b7844fb)
+
+
+### Clone the Pipeline Repo
+
+```bash
 git clone https://github.com/mikerobeson/nf-refdb-amplicon
 ```
-*Note: depending on the development cycle you may also need to clone and install the latest repo version of RESCRIPt into your QIIME 2 environment. You can comment the lines under `Detected system environment` and uncomment and modify the lines under `Existing environment` within the `nextflow.config` file.*
 
-```
+> [!NOTE]
+> Depending on the development cycle you may also need to clone and install the latest repo version of RESCRIPt into your QIIME 2 environment. 
+> You can comment the lines under `Detected system environment` and uncomment and modify the lines under `Existing environment` within the `nextflow.config` file.*
+
+```bash
 conda activate qiime2-amplicon-2024.10
 git clone https://github.com/bokulich-lab/RESCRIPt
 cd RESCRIPt

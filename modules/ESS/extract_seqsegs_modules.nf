@@ -5,6 +5,7 @@
 // https://github.com/nextflow-io/nextflow/discussions/5297
 // https://nextflow-io.github.io/patterns/feedback-loop/
 
+/*
 process ESS_EXTRACTSEQSEGS {
 
     tag 'Extracting sequence segments'
@@ -54,7 +55,7 @@ process ESS_DEREP {
         * Also meaning if we use `amp_reg` for both the latter will overwrite the
         * variable messing up the outfile names and the pipeline.
         */
-
+/*
     output:
         tuple val(db), val(amp_reg), path("${db}_${amp_reg}_derep_seqs_*.qza"), emit: derep_seqs
         tuple val(db), val(amp_reg), path("${db}_${amp_reg}_derep_taxa_*.qza"), emit: derep_taxa
@@ -70,7 +71,9 @@ process ESS_DEREP {
             --o-dereplicated-taxa '${db}_${amp_reg}_derep_taxa_${task.index}.qza'
         """
 }
+*/
 
+/*
 process ESS_CULL {
 
     tag 'Culling sequences.'
@@ -96,7 +99,8 @@ process ESS_CULL {
         """
 
 }
-
+*/
+/*
 process ESS_TABSEQS {
 
     tag 'Tabulating sequences.'
@@ -118,7 +122,8 @@ process ESS_TABSEQS {
         """
 
 }
-
+*/
+/*
 process ESS_TRAIN_CLASSIFIER {
     
     tag 'Train classifier.'
@@ -144,3 +149,4 @@ process ESS_TRAIN_CLASSIFIER {
         """
 
 }
+*/

@@ -3,18 +3,19 @@ Nextflow pipeline for generating reference databases for amplicon sequences.
 
 :construction: *Caution, this package is still under development and has not been thoroughly tested. Workflow commands and modes of operation may change.* :construction:
 
+---
+
 ## Requirements
 
 - [Nextflow](https://www.nextflow.io/) (_>= 23.04_)
-- [Cond-forge](https://conda-forge.org/) (_Miniforge/Mambaforge recommended_)
+- [Conda](https://conda-forge.org/) (_Miniforge/Mambaforge recommended_)
+- [Docker](https://www.docker.com/)
 
-The pipeline will automatically download and create the required QIIME 2 conda environment on first run. No manual QIIME 2 installation is needed.
+---
 
-## How to install and run
+## Installation
 
-### Install nextflow
-
-Nextflow can be installed as standalone or via conda.
+### 1. Install nextflow
 
 **Standalone installation (recommended)**
 
@@ -35,15 +36,73 @@ conda activate nextflow
 > For more info on nextflow please visit [Nextflow documentation](https://docs.seqera.io/nextflow/?__hstc=247481240.43f4da109a9544f90ea47ec4dba6e0f8.1767891341744.1781221442473.1781497907630.12&__hssc=247481240.1.1781497907630&__hsfp=7c1ebc5cd52a44b32f139dab9b7844fb)
 
 
-### Clone the Pipeline Repo
+### 2. Clone the Pipeline
 
 ```bash
 git clone https://github.com/mikerobeson/nf-refdb-amplicon
+cd nf-refdb-amplicon
+```
+
+
+### 3. Set Up QIIME 2 Environment
+
+> [!IMPORTANT]
+> Choose the setup method based on your operating system and execution profile.
+
+#### 🍎 macOS — Docker (recommended)
+
+Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and **running**. The pipeline will **automatically** pull the correct QIIME 2 Docker image — no manual setup required.
+
+```bash
+nextflow run main.nf \
+    --pipeline_type ssu \
+    -profile local,docker
+```
+
+
+#### 🍎 macOS — Conda
+
+> [!NOTE]
+> Nextflow **cannot** automatically set `CONDA_SUBDIR=osx-64` when creating environments. You must **manually** create the QIIME 2 environment first, then point to it using `--qiime_conda_env`.
+
+**Step 1:** Create the QIIME 2 environment manually:
+
+```bash
+# Required for Apple Silicon (M1/M2/M3) Macs
+CONDA_SUBDIR=osx-64 conda env create \
+    --name rachis-qiime2-2026.4 \
+    --file https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2026.4/qiime2/released/rachis-qiime2-osx-64-conda.yml
+```
+
+**Step 2:** Get the path to your environment:
+
+```bash
+conda env list | grep rachis-qiime2-2026.4
+```
+
+**Step 3:** Run the pipeline pointing to the existing environment:
+
+```bash
+nextflow run main.nf \
+    --pipeline_type ssu \
+    --qiime_conda_env /path/to/conda/envs/rachis-qiime2-2026.4 \
+    -profile local,conda
+```
+
+
+#### 🐧 Linux — Conda (auto-install)
+
+On Linux, the pipeline will **automatically** create the QIIME 2 environment from the YAML files provided in the `assets/` folder. Simply point `--qiime_conda_env` to the YAML file:
+
+```bash
+nextflow run main.nf \
+    --pipeline_type ssu \
+    --qiime_conda_env assets/rachis-qiime2-linux-64-conda.yml \
+    -profile local,conda
 ```
 
 > [!NOTE]
-> Depending on the development cycle you may also need to clone and install the latest repo version of RESCRIPt into your QIIME 2 environment. 
-> You can comment the lines under `Detected system environment` and uncomment and modify the lines under `Existing environment` within the `nextflow.config` file.*
+> Depending on the development cycle you may also need to install the latest version of RESCRIPt manually into your QIIME 2 environment:
 
 ```bash
 conda activate qiime2-amplicon-2024.10
@@ -52,25 +111,91 @@ cd RESCRIPt
 pip install .
 ```
 
-**Run nextflow pipeline**:
-Then change to the `nf-refdb-amplicon` directory:
-```
-cd nf-refdb-amplicon
+---
+
+## Quick start
+
+**All databases:**
+```bash
+nextflow run main.nf --pipeline_type ssu -profile local,docker
 ```
 
-### Then sun either the SSU (16S/18S rRNA gene) or the "extract sequence segments" (ess) pipeline:
-
-- Use `-profile local` if running locally, or `-profile cluster` if running on HPC.
-- Then set either `ssu` or `ess` for `params.pipeline_type` parameter within the `nextflow.config` file prior to running one of the pipelines outlined below.
-
-
+**Multiple databases:**
+```bash
+nextflow run main.nf --pipeline_type ssu --ssu_databases silva,rdp -profile local,docker
 ```
-nextflow run main.nf -profile <profile>
+
+**Single database:**
+```bash
+nextflow run main.nf --pipeline_type ssu --ssu_databases rdp -profile local,docker
 ```
+
+**Skip classifiers:**
+```bash
+nextflow run main.nf --pipeline_type ssu \
+    --build_full_classifier false \
+    --build_amplicon_classifier false \
+    -profile local,docker
+```
+
+**Resume a previous run:**
+```bash
+nextflow run main.nf --pipeline_type ssu -profile local,docker -resume
+```
+
+**Show help:**
+```bash
+nextflow run main.nf --help
+```
+
+---
+
+## Usage
+
+### Pipeline Types
+
+| Type | Description |
+|------|-------------|
+| `ssu` | Build Naive Bayes classifiers from SSU rRNA gene reference databases (SILVA, GTDB, RDP) |
+| `ess` | Build classifiers using iterative `extract-seq-segments` approach (under development) |
+
+### Profiles
+
+Combine an executor profile with an engine profile:
+
+| Executor | Engine | Usage | Description |
+|----------|--------|-------|-------------|
+| `local` | `docker` | `-profile local,docker` | Run locally with Docker (recommended for macOS/Linux desktops) |
+| `local` | `conda` | `-profile local,conda` | Run locally with Conda |
+| `cluster` | `conda` | `-profile cluster,conda` | Submit to SLURM HPC with Conda |
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--pipeline_type` | — | Required. `ssu` or `ess` |
+| `--ssu_databases` | `silva,gtdb,rdp` | Databases to build classifiers from |
+| `--build_full_classifier` | `true` | Build full-length reference classifier |
+| `--build_amplicon_classifier` | `true` | Build amplicon-specific classifier |
+| `--qiime_conda_env` | YAML in assets/ | Path to existing QIIME 2 conda environment (for conda profile) |
+| `--outdir` | `results` | Output directory |
+| `--max_memory` | `16.GB` | Max memory per process |
+| `--max_cpus` | `4` | Max CPUs per process |
+| `--max_time` | `48.h` | Max time per process |
+| `--help` | `false` | Show help message |
+
+
+> [!WARNING]
+> The `ess` pipeline is currently **under active development** and is not yet available.
+> The relevant code has been commented out in `main.nf`:
+> ```nextflow
+> // include { ESS } from './subworkflows/ESS/ess.nf'
+> ```
+> Only `--pipeline_type ssu` is supported at this time.
 
 *Note: the `ess` pipeline is currently in alpha development. You'll have to provide files using the `params.segseqs`, `params.seqs`, and `params.taxa` parameters in the config file.*
 
-
+---
 
 ## Cite
 If you make use of this pipeline please cite RESCRIPt:
@@ -86,4 +211,5 @@ Please be sure to cite the following as well:
 
 ---
 
-*Note: an older Snakemake variant of this pipeline is available [here](https://github.com/mikerobeson/snake-ref-amplicon-pipe).*
+> [!NOTE] 
+> An older Snakemake variant of this pipeline is available [here](https://github.com/mikerobeson/snake-ref-amplicon-pipe).

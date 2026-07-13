@@ -44,26 +44,25 @@ cd nf-refdb-amplicon
 ```
 
 
-### 3. Set Up QIIME 2 Environment
+### 3. Deploying the Pipeline
 
 > [!IMPORTANT]
 > Choose the setup method based on your operating system and execution profile.
 
-#### 🍎 macOS — Docker (recommended)
+The pipeline can be deployed locally or on cluster.  
 
-Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and **running**. The pipeline will **automatically** pull the correct QIIME 2 Docker image — no manual setup required.
-
-```bash
-nextflow run main.nf \
-    --pipeline_type ssu \
-    -profile local,docker
-```
-
-
-#### 🍎 macOS — Conda
+#### Conda (recommended)
 
 > [!NOTE]
-> Nextflow **cannot** automatically set `CONDA_SUBDIR=osx-64` when creating environments. You must **manually** create the QIIME 2 environment first, then point to it using `--qiime_conda_env`.
+> - Currently, the pipeline supports Conda rather than Docker.
+> - Docker-based QIIME 2 images have reported runtime and compatibility issues on M1/M2 (emulation problems, crashes, or missing platform support).
+> - Use the conda profile (`-profile local,conda`) or point to an existing QIIME 2 conda environment with `--qiime_conda_env /path/to/env`.
+> - The pipeline supports Conda for both local and cluster execution (e.g., `-profile local,conda` and `-profile cluster,conda`).
+> - However in macOS, Nextflow cannot automatically set `CONDA_SUBDIR=osx-64`; the user needs to manually create the QIIME 2 environment with `CONDA_SUBDIR=osx-64` and then supply its path via `--qiime_conda_env`.
+> - We are actively working on deploying the pipeline via containers (Docker, Singularity)!
+
+
+#### For 🍎 macOS
 
 **Step 1:** Create the QIIME 2 environment manually:
 
@@ -90,7 +89,7 @@ nextflow run main.nf \
 ```
 
 
-#### 🐧 Linux — Conda (auto-install)
+#### For 🐧 Linux (auto-install)
 
 On Linux, the pipeline will **automatically** create the QIIME 2 environment from the YAML files provided in the `assets/` folder. Simply point `--qiime_conda_env` to the YAML file:
 
@@ -117,17 +116,17 @@ pip install .
 
 **All databases:**
 ```bash
-nextflow run main.nf --pipeline_type ssu -profile local,docker
+nextflow run main.nf --pipeline_type ssu -profile local,conda
 ```
 
 **Multiple databases:**
 ```bash
-nextflow run main.nf --pipeline_type ssu --ssu_databases silva,rdp -profile local,docker
+nextflow run main.nf --pipeline_type ssu --ssu_databases silva,rdp -profile local,conda
 ```
 
 **Single database:**
 ```bash
-nextflow run main.nf --pipeline_type ssu --ssu_databases rdp -profile local,docker
+nextflow run main.nf --pipeline_type ssu --ssu_databases rdp -profile local,conda
 ```
 
 **Skip classifiers:**
@@ -140,7 +139,7 @@ nextflow run main.nf --pipeline_type ssu \
 
 **Resume a previous run:**
 ```bash
-nextflow run main.nf --pipeline_type ssu -profile local,docker -resume
+nextflow run main.nf --pipeline_type ssu -profile local,conda -resume
 ```
 
 **Show help:**

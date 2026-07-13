@@ -28,11 +28,21 @@ process GET_RDP {
     """
     wget https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/RDPClassifier_16S_trainsetNo19_QiimeFormat.zip
 
-    python -c "import zipfile; zipfile.ZipFile('RDPClassifier_16S_trainsetNo19_QiimeFormat.zip').extractall('.')"
+    python -c "
+import zipfile
+import os
+
+with zipfile.ZipFile('RDPClassifier_16S_trainsetNo19_QiimeFormat.zip', 'r') as zf:
+    for member in zf.infolist():
+        # Fix Windows backslash paths
+        member.filename = member.filename.replace('\\\\\\\\', '/')
+        zf.extract(member, '.')
+"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        wget: \$(wget --version | head -1 | sed 's/GNU Wget //' | sed 's/ .*//')
+        wget: \$(wget --version 2>&1 | head -1 | sed 's/GNU Wget //' | sed 's/ .*//')
+        python: \$(python --version | sed 's/Python //')
     END_VERSIONS
     """
 }

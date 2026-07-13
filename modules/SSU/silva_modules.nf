@@ -40,7 +40,7 @@ process GET_SILVA {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         qiime2: \$(qiime --version | head -1 | sed 's/q2cli version //')
-        rescript: \$(pip show q2-rescript 2>/dev/null | grep -i version | sed 's/Version: //')
+        rescript: \$(pip show rescript 2>/dev/null | grep '^Version' | sed 's/Version: //')
     END_VERSIONS
     """
 }

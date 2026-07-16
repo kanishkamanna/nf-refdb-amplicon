@@ -25,7 +25,7 @@ include {
     DEREP as AMP_DEREP;
     CULL as AMP_CULL;
     TRAIN_CLASSIFIER as AMP_TRAIN;
-} from '../../modules/base_modules.nf'
+} from '../../modules/SSU/base_modules.nf'
 
 /*
 ----------------------------------------------------------------------------------------

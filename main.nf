@@ -21,7 +21,7 @@ nextflow.enable.dsl = 2
 */
 
 include { SSU } from './subworkflows/SSU/ssu.nf'
-//include { ESS } from './subworkflows/ESS/ess.nf'
+include { ESS } from './subworkflows/ESS/ess.nf'
 
 // ESS subworkflow is currently under active development and not yet available.
 // Uncomment the line below once the ESS pipeline is ready.
@@ -154,8 +154,8 @@ workflow {
     if (params.pipeline_type == 'ssu') {
         SSU()
     } else if (params.pipeline_type == 'ess') {
-        //ESS()
-        error 'ESS pipeline is under development. Not yet available.'
+        ESS()
+        //error 'ESS pipeline is under development. Not yet available.'
     } else {
         error """
             ==========================================================

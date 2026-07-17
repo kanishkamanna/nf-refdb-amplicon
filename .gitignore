@@ -1,4 +1,7 @@
 .DS_Store
-results
+*results
 .nextflow*
 work
+run_nfrefdbamp*
+logs*
+.conda-cache*

@@ -1,10 +1,11 @@
-nextflow.preview.recursion=true
+//nextflow.preview.recursion=true
 
 // Recusion notes: 
 // https://github.com/nextflow-io/nextflow/discussions/2521
 // https://github.com/nextflow-io/nextflow/discussions/5297
 // https://nextflow-io.github.io/patterns/feedback-loop/
 
+/*
 include {
 
     ESS_EXTRACTSEQSEGS;
@@ -53,3 +54,4 @@ workflow MAKE_ESS_CLASSIFIER {
     ESS_TRAIN_CLASSIFIER(RECURSE.out, params.taxa)
 
 }
+*/

@@ -9,4 +9,3 @@ data*
 .nf-test*
 tests
 nf-test.config
-nextflow_schema.json

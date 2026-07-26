@@ -74,7 +74,7 @@ workflow {
 
             SSU Parameters:
                 --ssu.databases             Databases to build (comma-separated) [default: ${params.ssu.databases}]
-                                            Available: silva, greengenes2, rdp, gtdb, ncbi
+                                            Available: silva, rdp, gtdb
                 --ssu.build_full_classifier Build full-length classifier [default: ${params.ssu.build_full_classifier}]
                 --ssu.build_amplicon_classifier
                                             Build amplicon classifier [default: ${params.ssu.build_amplicon_classifier}]
@@ -82,8 +82,6 @@ workflow {
                 --ssu.rev_primer            Reverse primer sequence [default: ${params.ssu.rev_primer ?: 'null (required for amplicon classifier)'}]
                 --ssu.min_len               Minimum amplicon length [default: ${params.ssu.min_len}]
                 --ssu.max_len               Maximum amplicon length [default: ${params.ssu.max_len}]
-                --ssu.ncbi_tax_includes     Taxa to include for NCBI [default: ${params.ssu.ncbi_tax_includes ?: 'none'}]
-                --ssu.ncbi_tax_excludes     Taxa to exclude for NCBI [default: ${params.ssu.ncbi_tax_excludes ?: 'none'}]
 
             Examples:
                 # Build SILVA with amplicon classifier for V4 region:

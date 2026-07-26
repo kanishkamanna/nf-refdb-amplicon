@@ -5,3 +5,8 @@ work
 run_nfrefdbamp*
 logs*
 .conda-cache*
+data*
+.nf-test*
+tests
+nf-test.config
+nextflow_schema.json

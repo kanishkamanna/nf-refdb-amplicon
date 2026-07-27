@@ -118,6 +118,7 @@ workflow {
         }
 
         // --help ess
+                // --help ess
         if (params.help == 'ess') {
             log.info """
             ===================================================================
@@ -125,64 +126,88 @@ workflow {
             ===================================================================
 
             The ESS pipeline performs iterative Evaluate, Select, Subset
-            curation of reference sequences. Supports local files or
+            curation of reference sequences. Supports custom user files or
             downloading from public databases via RESCRIPt.
 
             Usage:
-                nextflow run main.nf --pipeline_type ess [options] -profile <local,docker|local,conda>
+                nextflow run main.nf --pipeline_type ess [options] -profile <local,conda|cluster,conda>
 
             Data Source:
                 --ess.source                Data source [default: ${params.ess.source}]
-                                            Options: local, ncbi, unite, midori2, pr2
+                                            Options: custom, ncbi, unite, midori2, pr2
 
-            Local Input (when --ess.source local):
-                --ess.seqs                  Path to sequences (.qza) [default: ${params.ess.seqs ?: 'null (required)'}]
-                --ess.taxa                  Path to taxonomy (.qza) [default: ${params.ess.taxa ?: 'null (required)'}]
-                --ess.seqsegs               Path to sequence segments (.qza, optional) [default: ${params.ess.seqsegs ?: 'null'}]
+            Custom Input (when --ess.source custom):
+                --ess.seqs                  Path to sequences (.qza) [required]
+                --ess.taxa                  Path to taxonomy (.qza) [required]
+                --ess.seqsegs               Path to sequence segments (.qza) [required]
+
+            Output Naming:
+                --ess.db                    Database name for output files [default: ${params.ess.db}]
+                --ess.amp_seg               Amplicon segment name [default: ${params.ess.amp_seg}]
 
             ESS Iteration Parameters:
                 --ess.max_iter              Max iterations [default: ${params.ess.max_iter}]
-                --ess.num_degenerates       Degenerates per iteration [default: ${params.ess.num_degenerates}]
-                --ess.num_mismatch          Max primer mismatches [default: ${params.ess.num_mismatch}]
-                --ess.build_classifier      Build classifier from output [default: ${params.ess.build_classifier}]
+                --ess.perc_identity         Percent identity for segment extraction [default: ${params.ess.perc_identity}]
+                --ess.min_seq_len           Minimum sequence length [default: ${params.ess.min_seq_len}]
+                --ess.train_classifier      Train classifier from output [default: ${params.ess.train_classifier}]
 
             NCBI Parameters (when --ess.source ncbi):
-                --ess.ncbi_query            NCBI Entrez query string [default: ${params.ess.ncbi_query ?: 'none'}]
-                --ess.ncbi_ranks            Taxonomic ranks [default: ${params.ess.ncbi_ranks}]
+                --ess.ncbi_query            NCBI Entrez query string [required]
 
             UNITE Parameters (when --ess.source unite):
                 --ess.unite_version         UNITE version [default: ${params.ess.unite_version}]
-                --ess.unite_taxon_group     Taxon group [default: ${params.ess.unite_taxon_group}]
+                --ess.unite_taxon_group     Taxon group: fungi, eukaryotes [default: ${params.ess.unite_taxon_group}]
+                --ess.unite_cluster_id      Cluster ID threshold [default: ${params.ess.unite_cluster_id}]
+                --ess.unite_singletons      Include singletons [default: ${params.ess.unite_singletons}]
 
             MIDORI2 Parameters (when --ess.source midori2):
+                --ess.midori2_target_gene   Target gene (COI, 12S, 16S, etc.) [default: ${params.ess.midori2_target_gene}]
                 --ess.midori2_version       MIDORI2 version [default: ${params.ess.midori2_version ?: 'latest'}]
-                --ess.midori2_target_gene   Target gene [default: ${params.ess.midori2_target_gene}]
 
             PR2 Parameters (when --ess.source pr2):
                 --ess.pr2_version           PR2 version [default: ${params.ess.pr2_version ?: 'latest'}]
 
             Examples:
-                # Local files with 2 iterations:
+                # Custom local files with 2 iterations:
                 nextflow run main.nf --pipeline_type ess \\
-                    --ess.source local \\
+                    --ess.source custom \\
                     --ess.seqs sequences.qza \\
                     --ess.taxa taxonomy.qza \\
+                    --ess.seqsegs segments.qza \\
                     --ess.max_iter 2 \\
-                    -profile local,docker
+                    -profile local,conda
 
                 # Download from NCBI (plant trnL):
                 nextflow run main.nf --pipeline_type ess \\
                     --ess.source ncbi \\
-                    --ess.ncbi_query '"txid33090"[Organism] AND "trnL"[Gene]' \\
+                    --ess.ncbi_query '"txid35493"[ORGN] AND "trnL"[Gene]' \\
+                    --ess.seqsegs segments.qza \\
                     --ess.max_iter 3 \\
-                    -profile local,docker
+                    -profile local,conda
 
-                # Download from UNITE:
+                # Download from UNITE (fungal ITS):
                 nextflow run main.nf --pipeline_type ess \\
                     --ess.source unite \\
                     --ess.unite_taxon_group fungi \\
+                    --ess.unite_cluster_id dynamic \\
+                    --ess.seqsegs segments.qza \\
                     --ess.max_iter 2 \\
-                    -profile local,docker
+                    -profile local,conda
+
+                # Download from MIDORI2 (COI barcoding):
+                nextflow run main.nf --pipeline_type ess \\
+                    --ess.source midori2 \\
+                    --ess.midori2_target_gene COI \\
+                    --ess.seqsegs segments.qza \\
+                    --ess.max_iter 2 \\
+                    -profile local,conda
+
+                # Download from PR2 (protist ribosomal):
+                nextflow run main.nf --pipeline_type ess \\
+                    --ess.source pr2 \\
+                    --ess.seqsegs segments.qza \\
+                    --ess.max_iter 2 \\
+                    -profile local,conda
             ===================================================================
             """.stripIndent()
             return

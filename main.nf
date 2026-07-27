@@ -59,7 +59,7 @@ workflow {
     // Help messages
     if (params.help) {
 
-        // --help ssu
+                // --help ssu
         if (params.help == 'ssu') {
             log.info """
             ===================================================================
@@ -73,29 +73,46 @@ workflow {
                 nextflow run main.nf --pipeline_type ssu [options] -profile <local,docker|local,conda>
 
             SSU Parameters:
-                --ssu.databases             Databases to build (comma-separated) [default: ${params.ssu.databases}]
+                --ssu_databases             Databases to build (comma-separated) [default: silva,rdp,gtdb]
                                             Available: silva, rdp, gtdb
-                --ssu.build_full_classifier Build full-length classifier [default: ${params.ssu.build_full_classifier}]
-                --ssu.build_amplicon_classifier
-                                            Build amplicon classifier [default: ${params.ssu.build_amplicon_classifier}]
-                --ssu.fwd_primer            Forward primer sequence [default: ${params.ssu.fwd_primer ?: 'null (required for amplicon classifier)'}]
-                --ssu.rev_primer            Reverse primer sequence [default: ${params.ssu.rev_primer ?: 'null (required for amplicon classifier)'}]
-                --ssu.min_len               Minimum amplicon length [default: ${params.ssu.min_len}]
-                --ssu.max_len               Maximum amplicon length [default: ${params.ssu.max_len}]
+                --build_full_classifier     Build full-length classifier [default: true]
+                --build_amplicon_classifier Build amplicon classifier [default: true]
+
+            Primer Pairs:
+                --primer_pairs              List of primer pairs for amplicon region extraction [default: null]
+                                            Format: [[name, forward_primer, reverse_primer], ...]
+
+                                            Do not use 'full' as a primer pair name — it is reserved.
+
+                                            Note: Some primer-pair combinations may not work if a
+                                            primer is towards the end of the full-length SSU sequence,
+                                            as the primer sequence may not be present at that location.
+                                            For these cases, use the ESS pipeline instead.
+
+                                            Available primer pairs (uncomment in conf/ssu.config):
+                                              27F338R   : AGAGTTTGATYMTGGCTCAG / GCTGCCTCCCGTAGGAGT
+                                              27F534R   : AGAGTTTGATYMTGGCTCAG / ATTACCGCGGCTGCTGG
+                                              357wF805R : CCTACGGGNGGCWGCAG    / GACTACHVGGGTATCTAATCC
+                                              357wF806R : CCTACGGGNGGCWGCAG    / GGACTACHVGGGTWTCTAAT
+                                              515F806R  : GTGYCAGCMGCCGCGGTAA  / GGACTACNVGGGTWTCTAAT
+                                              515F926R  : GTGYCAGCMGCCGCGGTAA  / CCGYCAATTYMTTTRAGTTT
+                                              515F944R  : GTGCCAGCMGCCGCGGTAA  / GAATTAAACCACATGCTC
+                                              939F1378R : GAATTGACGGGGGCCCGCACAAG / CGGTGTGTACAAGGCCCGGGAACG
 
             Examples:
-                # Build SILVA with amplicon classifier for V4 region:
+                # Build RDP and GTDB only, no classifiers:
                 nextflow run main.nf --pipeline_type ssu \\
-                    --ssu.databases silva \\
-                    --ssu.fwd_primer GTGYCAGCMGCCGCGGTAA \\
-                    --ssu.rev_primer GGACTACNVGGGTWTCTAAT \\
-                    -profile local,docker
+                    --ssu_databases 'rdp,gtdb' \\
+                    --build_full_classifier false \\
+                    --build_amplicon_classifier false \\
+                    -profile local,conda
 
-                # Build multiple databases, full-length only:
+                # Build all databases with default amplicon classifier (515F806R):
                 nextflow run main.nf --pipeline_type ssu \\
-                    --ssu.databases silva,rdp,gtdb \\
-                    --ssu.build_amplicon_classifier false \\
-                    -profile local,docker
+                    --ssu_databases 'silva,rdp,gtdb' \\
+                    -profile local,conda
+
+                # To change primer pairs, edit conf/ssu.config directly
             ===================================================================
             """.stripIndent()
             return

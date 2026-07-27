@@ -8,24 +8,18 @@ process ESS_GET_UNITE_DATA {
     conda params.qiime_conda_env
     container null
 
-    input:
-    val version
-    val taxon_group
-    val cluster_id
-    val singletons
-
     output:
     path "unite_sequences.qza", emit: seqs
     path "unite_taxonomy.qza",  emit: taxa
     path "versions.yml",        emit: versions
 
     script:
-    def singleton_flag = singletons.toString().toBoolean() ? '--p-include-singletons' : '--p-no-include-singletons'
+    def singleton_flag = params.ess.unite_singletons.toString().toBoolean() ? '--p-singletons' : '--p-no-singletons'
     """
     qiime rescript get-unite-data \
-        --p-version ${version} \
-        --p-taxon-group ${taxon_group} \
-        --p-cluster-id ${cluster_id} \
+        --p-version ${params.ess.unite_version} \
+        --p-taxon-group ${params.ess.unite_taxon_group} \
+        --p-cluster-id ${params.ess.unite_cluster_id} \
         ${singleton_flag} \
         --o-sequences unite_sequences.qza \
         --o-taxonomy unite_taxonomy.qza \

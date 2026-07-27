@@ -8,20 +8,16 @@ process ESS_GET_MIDORI2_DATA {
     conda params.qiime_conda_env
     container null
 
-    input:
-    val target_gene
-    val version
-
     output:
     path "midori2_sequences.qza", emit: seqs
     path "midori2_taxonomy.qza",  emit: taxa
     path "versions.yml",          emit: versions
 
     script:
-    def version_param = version ? "--p-version '${version}'" : ''
+    def version_param = params.ess.midori2_version ? "--p-version '${params.ess.midori2_version}'" : ''
     """
     qiime rescript get-midori2-data \
-        --p-target-gene ${target_gene} \
+        --p-target-gene ${params.ess.midori2_target_gene} \
         ${version_param} \
         --o-sequences midori2_sequences.qza \
         --o-taxonomy midori2_taxonomy.qza \

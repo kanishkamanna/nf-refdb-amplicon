@@ -8,9 +8,10 @@ include { ESS_GET_NCBI_DATA    } from '../../modules/ESS/ncbi_module.nf'
 include { ESS_GET_UNITE_DATA   } from '../../modules/ESS/unite_module.nf'
 include { ESS_GET_MIDORI2_DATA } from '../../modules/ESS/midor2_module.nf'
 include { ESS_GET_PR2_DATA     } from '../../modules/ESS/pr2_module.nf'
-include { ESS_SETUP            } from '../../modules/ESS/extract_seqsegs_modules.nf'
-include { ESS_ITERATE          } from '../../modules/ESS/extract_seqsegs_modules.nf'
-include { ESS_TRAIN_CLASSIFIER } from '../../modules/ESS/extract_seqsegs_modules.nf'
+include { ESS_EXTRACT_READS    } from '../../modules/ESS/extract_seqsegs_module.nf'
+include { ESS_SETUP            } from '../../modules/ESS/iterate_modules.nf'
+include { ESS_ITERATE          } from '../../modules/ESS/iterate_modules.nf'
+include { ESS_TRAIN_CLASSIFIER } from '../../modules/ESS/train_classifier_module.nf'
 
 workflow ESS {
 
@@ -43,7 +44,7 @@ workflow ESS {
         ch_ref_seqs = channel.fromPath(params.ess.seqs, checkIfExists: true)
         ch_ref_taxa = channel.fromPath(params.ess.taxa, checkIfExists: true)
 
-    } else if (params.ess.source == 'ncbi') {
+        } else if (params.ess.source == 'ncbi') {
         if (!params.ess.ncbi_query) {
             error """
                 ==========================================================
@@ -53,34 +54,26 @@ workflow ESS {
                   nextflow run main.nf --pipeline_type ess \\
                       --ess.source ncbi \\
                       --ess.ncbi_query '"txid35493"[ORGN] AND "trnL"[Gene]' \\
-                      -profile local,docker
+                      -profile local,conda
                 ==========================================================
             """.stripIndent()
         }
-        ESS_GET_NCBI_DATA(params.ess.ncbi_query)
+        ESS_GET_NCBI_DATA()
         ch_ref_seqs = ESS_GET_NCBI_DATA.out.seqs
         ch_ref_taxa = ESS_GET_NCBI_DATA.out.taxa
 
     } else if (params.ess.source == 'unite') {
-        ESS_GET_UNITE_DATA(
-            params.ess.unite_version,
-            params.ess.unite_taxon_group,
-            params.ess.unite_cluster_id,
-            params.ess.unite_singletons
-        )
+        ESS_GET_UNITE_DATA()
         ch_ref_seqs = ESS_GET_UNITE_DATA.out.seqs
         ch_ref_taxa = ESS_GET_UNITE_DATA.out.taxa
 
     } else if (params.ess.source == 'midori2') {
-        ESS_GET_MIDORI2_DATA(
-            params.ess.midori2_target_gene,
-            params.ess.midori2_version
-        )
+        ESS_GET_MIDORI2_DATA()
         ch_ref_seqs = ESS_GET_MIDORI2_DATA.out.seqs
         ch_ref_taxa = ESS_GET_MIDORI2_DATA.out.taxa
 
     } else if (params.ess.source == 'pr2') {
-        ESS_GET_PR2_DATA(params.ess.pr2_version)
+        ESS_GET_PR2_DATA()
         ch_ref_seqs = ESS_GET_PR2_DATA.out.seqs
         ch_ref_taxa = ESS_GET_PR2_DATA.out.taxa
 
@@ -98,17 +91,30 @@ workflow ESS {
     // ======================================================================
 
     if (params.ess.seqsegs) {
+        // User provided pre-existing segment sequences
         ch_seqsegs = channel.fromPath(params.ess.seqsegs, checkIfExists: true)
+
+    } else if (params.ess.fwd_primer && params.ess.rev_primer) {
+        // Generate initial segments via primer extraction from downloaded data
+        ESS_EXTRACT_READS(ch_ref_seqs)
+        ch_seqsegs = ESS_EXTRACT_READS.out.seqsegs
+
     } else {
         error """
             ==========================================================
-            ERROR: --ess.seqsegs is required.
-            Provide the path to initial segment sequences (.qza).
+            ERROR: Either --ess.seqsegs must be provided, OR both
+            --ess.fwd_primer and --ess.rev_primer must be specified
+            to generate initial segments via primer extraction.
 
             Usage:
+              # Provide pre-existing segments:
               nextflow run main.nf --pipeline_type ess \\
-                  --ess.seqsegs /path/to/segments.qza \\
-                  ...
+                  --ess.seqsegs /path/to/segments.qza ...
+
+              # Or provide primers for automatic extraction:
+              nextflow run main.nf --pipeline_type ess \\
+                  --ess.fwd_primer GGGCAATCCTGAGCCAA \\
+                  --ess.rev_primer CCATTGAGTCTCTGCACCTATC ...
             ==========================================================
         """.stripIndent()
     }

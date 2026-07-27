@@ -8,16 +8,13 @@ process ESS_GET_PR2_DATA {
     conda params.qiime_conda_env
     container null
 
-    input:
-    val version
-
     output:
     path "pr2_sequences.qza", emit: seqs
     path "pr2_taxonomy.qza",  emit: taxa
     path "versions.yml",      emit: versions
 
     script:
-    def version_param = version ? "--p-version '${version}'" : ''
+    def version_param = params.ess.pr2_version ? "--p-version '${params.ess.pr2_version}'" : ''
     """
     qiime rescript get-pr2-data \
         ${version_param} \

@@ -8,9 +8,6 @@ process ESS_GET_NCBI_DATA {
     conda params.qiime_conda_env
     container null
 
-    input:
-    val query
-
     output:
     path "ncbi_sequences.qza", emit: seqs
     path "ncbi_taxonomy.qza",  emit: taxa
@@ -19,7 +16,7 @@ process ESS_GET_NCBI_DATA {
     script:
     """
     qiime rescript get-ncbi-data \
-        --p-query '${query}' \
+        --p-query '${params.ess.ncbi_query}' \
         --p-n-jobs ${task.cpus} \
         --o-sequences ncbi_sequences.qza \
         --o-taxonomy ncbi_taxonomy.qza \

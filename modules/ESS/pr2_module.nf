@@ -18,8 +18,8 @@ process ESS_GET_PR2_DATA {
     """
     qiime rescript get-pr2-data \
         ${version_param} \
-        --o-sequences pr2_sequences.qza \
-        --o-taxonomy pr2_taxonomy.qza \
+        --o-pr2-sequences pr2_sequences.qza \
+        --o-pr2-taxonomy pr2_taxonomy.qza \
         --verbose
 
     cat <<-END_VERSIONS > versions.yml

@@ -9,6 +9,7 @@ include { ESS_GET_UNITE_DATA   } from '../../modules/ESS/unite_module.nf'
 include { ESS_GET_MIDORI2_DATA } from '../../modules/ESS/midor2_module.nf'
 include { ESS_GET_PR2_DATA     } from '../../modules/ESS/pr2_module.nf'
 include { ESS_EXTRACT_READS    } from '../../modules/ESS/extract_seqsegs_module.nf'
+include { ESS_EXTRACT_FROM_COLLECTION } from '../../modules/ESS/extract_collect_module.nf'
 include { ESS_SETUP            } from '../../modules/ESS/iterate_modules.nf'
 include { ESS_ITERATE          } from '../../modules/ESS/iterate_modules.nf'
 include { ESS_TRAIN_CLASSIFIER } from '../../modules/ESS/train_classifier_module.nf'
@@ -68,9 +69,16 @@ workflow ESS {
         ch_ref_taxa = ESS_GET_UNITE_DATA.out.taxa
 
     } else if (params.ess.source == 'midori2') {
-        ESS_GET_MIDORI2_DATA()
-        ch_ref_seqs = ESS_GET_MIDORI2_DATA.out.seqs
-        ch_ref_taxa = ESS_GET_MIDORI2_DATA.out.taxa
+        ESS_GET_MIDORI2_DATA(params.ess.midori2_target_gene)
+        
+        ESS_EXTRACT_FROM_COLLECTION(
+            ESS_GET_MIDORI2_DATA.out.sequences_collection,
+            ESS_GET_MIDORI2_DATA.out.taxonomy_collection,
+            params.ess.midori2_target_gene
+        )
+        
+        ch_ref_seqs = ESS_EXTRACT_FROM_COLLECTION.out.sequences
+        ch_ref_taxa  = ESS_EXTRACT_FROM_COLLECTION.out.taxonomy
 
     } else if (params.ess.source == 'pr2') {
         ESS_GET_PR2_DATA()

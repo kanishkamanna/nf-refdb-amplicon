@@ -1,26 +1,22 @@
 process ESS_GET_MIDORI2_DATA {
-
+    label 'process_low'
     tag "Downloading from MIDORI2"
-    label 'process_long'
-
-    publishDir "${params.outdir}/ess/downloaded_data", mode: params.publish_dir_mode
-
     conda params.qiime_conda_env
-    container null
+
+    input:
+    val target_gene
 
     output:
-    path "midori2_sequences.qza", emit: seqs
-    path "midori2_taxonomy.qza",  emit: taxa
-    path "versions.yml",          emit: versions
+    path "midori2_sequences/", emit: sequences_collection
+    path "midori2_taxonomy/",  emit: taxonomy_collection
+    path "versions.yml",       emit: versions
 
     script:
-    def version_param = params.ess.midori2_version ? "--p-version '${params.ess.midori2_version}'" : ''
     """
     qiime rescript get-midori2-data \
-        --p-target-gene ${params.ess.midori2_target_gene} \
-        ${version_param} \
-        --o-sequences midori2_sequences.qza \
-        --o-taxonomy midori2_taxonomy.qza \
+        --p-mito-gene ${target_gene} \
+        --o-midori2-sequences midori2_sequences/ \
+        --o-midori2-taxonomy midori2_taxonomy/ \
         --verbose
 
     cat <<-END_VERSIONS > versions.yml

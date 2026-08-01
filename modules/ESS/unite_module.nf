@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_GET_UNITE_DATA
+
+    Downloads UNITE fungal ITS reference sequences and taxonomy data
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_GET_UNITE_DATA {
 
     tag "Downloading from UNITE"

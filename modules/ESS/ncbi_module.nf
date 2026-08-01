@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_GET_NCBI_DATA
+
+    Downloads NCBI reference sequences and taxonomy data
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_GET_NCBI_DATA {
 
     tag "Downloading from NCBI"

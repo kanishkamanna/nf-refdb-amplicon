@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_EXTRACT_READS
+
+    Extracts initial sequence segments via primer search
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_EXTRACT_READS {
 
     tag "Extracting initial sequence segments via primer search"

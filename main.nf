@@ -22,6 +22,7 @@ nextflow.enable.dsl = 2
 include { SSU } from './subworkflows/SSU/ssu.nf'
 include { ESS } from './subworkflows/ESS/ess.nf'
 
+
 /*
 ========================================================================================
     MAIN WORKFLOW

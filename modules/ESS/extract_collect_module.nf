@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_EXTRACT_FROM_COLLECTION
+
+    Extracts artifacts from a QIIME 2 collection
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_EXTRACT_FROM_COLLECTION {
     label 'process_low'
     tag "Extracting artifacts from collection"

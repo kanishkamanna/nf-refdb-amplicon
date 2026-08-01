@@ -1,17 +1,15 @@
 /*
-========================================================================================
+----------------------------------------------------------------------------------------
     BASE MODULES
-========================================================================================
-    Common processes shared across SSU and ESS pipelines.
-    These processes handle dereplication, culling, amplicon region extraction,
-    and classifier training.
+
+    Main processes for SSU pipeline - Dereplication, Culling, Extraction, Training
 ----------------------------------------------------------------------------------------
 */
 
 /*
 ----------------------------------------------------------------------------------------
     DEREPLICATE
-----------------------------------------------------------------------------------------
+
     Dereplicate sequences with matching taxonomies.
     Removes redundant sequences based on the specified mode.
 
@@ -55,10 +53,12 @@ process DEREP {
     """
 }
 
+
+
 /*
 ----------------------------------------------------------------------------------------
     AMPLICON REGION EXTRACTION
-----------------------------------------------------------------------------------------
+
     Extract amplicon region from full-length sequences using primer pairs.
     Uses in-silico PCR to identify and extract the target region.
 ----------------------------------------------------------------------------------------
@@ -95,10 +95,13 @@ process AMP_REG_EXTRACT {
     """
 }
 
+
+
+
 /*
 ----------------------------------------------------------------------------------------
     CULL SEQUENCES
-----------------------------------------------------------------------------------------
+
     Remove sequences that contain excessive degenerate bases or
     homopolymer runs. Helps clean up problematic reference sequences.
 ----------------------------------------------------------------------------------------
@@ -134,10 +137,12 @@ process CULL {
     """
 }
 
+
+
 /*
 ----------------------------------------------------------------------------------------
     TRAIN CLASSIFIER
-----------------------------------------------------------------------------------------
+
     Train a Naive Bayes classifier for taxonomic classification.
     Produces a classifier artifact that can be used with
     q2-feature-classifier for assigning taxonomy to query sequences.
@@ -171,9 +176,3 @@ process TRAIN_CLASSIFIER {
     END_VERSIONS
     """
 }
-
-/*
-========================================================================================
-    THE END
-========================================================================================
-*/

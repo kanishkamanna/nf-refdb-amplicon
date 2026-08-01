@@ -1,14 +1,8 @@
 /*
-========================================================================================
-    GTDB MODULES
-========================================================================================
-    Download and prepare GTDB SSU rRNA gene reference database.
+----------------------------------------------------------------------------------------
+    GTDB MODULE
 
-    GTDB (Genome Taxonomy Database) provides a standardised taxonomy
-    based on genome phylogeny. This module downloads SSU rRNA gene
-    sequences and taxonomy from the specified GTDB release.
-
-    Citation: https://gtdb.ecogenomic.org/about
+    Download and prepare GTDB SSU rRNA gene reference database
 ----------------------------------------------------------------------------------------
 */
 
@@ -38,9 +32,3 @@ process GET_GTDB {
     END_VERSIONS
     """
 }
-
-/*
-========================================================================================
-    THE END
-========================================================================================
-*/

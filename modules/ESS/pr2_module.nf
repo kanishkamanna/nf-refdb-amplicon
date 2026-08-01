@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_GET_PR2_DATA
+
+    Downloads Protist Ribosomal reference sequences and taxonomy data
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_GET_PR2_DATA {
 
     tag "Downloading from PR2"

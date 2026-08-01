@@ -1,3 +1,11 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_GET_MIDORI2_DATA
+
+    Downloads MIDORI2 mitochondrial gene reference sequences and taxonomy data
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_GET_MIDORI2_DATA {
     label 'process_low'
     tag "Downloading from MIDORI2"

@@ -1,3 +1,12 @@
+/*
+----------------------------------------------------------------------------------------
+    ESS_TRAIN_CLASSIFIER
+
+    Trains a Naive Bayes taxonomic classifier using curated reference sequences
+    and taxonomy
+ ----------------------------------------------------------------------------------------
+ */
+
 process ESS_TRAIN_CLASSIFIER {
 
      tag "Train ESS classifier"

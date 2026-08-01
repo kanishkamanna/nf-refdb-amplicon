@@ -147,7 +147,7 @@ workflow ESS {
     ESS_ITERATE(updates, limit)
 
     // ======================================================================
-    // Train classifier on final output (optional)
+    // Train classifier on final output
     // ======================================================================
 
     if (params.ess.train_classifier.toString().toBoolean()) {

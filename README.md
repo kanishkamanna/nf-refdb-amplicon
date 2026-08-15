@@ -1,21 +1,33 @@
 # nf-refdb-amplicon
+
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
+
 Nextflow pipeline for generating reference databases for amplicon sequences.
 
-:construction: *Caution, this package is still under development and has not been thoroughly tested. Workflow commands and modes of operation may change.* :construction:
+> [!CAUTION]
+> :construction: *This pipeline is in beta development. Workflow commands and modes of operation may change.* :construction:
 
 ---
+## Pipeline Overview
+<p align="center">
+    <a href="docs/img/pipeline.svg">
+        <img src="docs/img/pipeline.svg" alt="Pipeline overview" style="max-width:100%;height:auto;">
+    </a>
+</p>
 
-## Requirements
+---
+## Getting Started
 
-- [Nextflow](https://www.nextflow.io/) (_>= 23.04_)
+### Requirements
+
+- [Nextflow](https://www.nextflow.io/) (_>= 24.04_)
 - [Conda](https://conda-forge.org/) (_Miniforge/Mambaforge recommended_)
-- [Docker](https://www.docker.com/)
 
----
 
-## Installation
+### Installation
 
-### 1. Install nextflow
+#### 1. Install nextflow
 
 **Standalone installation (recommended)**
 
@@ -36,7 +48,7 @@ conda activate nextflow
 > For more info on nextflow please visit [Nextflow documentation](https://docs.seqera.io/nextflow/?__hstc=247481240.43f4da109a9544f90ea47ec4dba6e0f8.1767891341744.1781221442473.1781497907630.12&__hssc=247481240.1.1781497907630&__hsfp=7c1ebc5cd52a44b32f139dab9b7844fb)
 
 
-### 2. Clone the Pipeline
+#### 2. Clone the Pipeline
 
 ```bash
 git clone https://github.com/mikerobeson/nf-refdb-amplicon
@@ -44,14 +56,14 @@ cd nf-refdb-amplicon
 ```
 
 
-### 3. Deploying the Pipeline
+#### 3. Deploying the Pipeline
 
 > [!IMPORTANT]
 > Choose the setup method based on your operating system and execution profile.
 
 The pipeline can be deployed locally or on cluster.  
 
-#### Conda (recommended)
+##### Conda (recommended)
 
 > [!NOTE]
 > - Currently, the pipeline supports Conda rather than Docker.
@@ -62,8 +74,7 @@ The pipeline can be deployed locally or on cluster.
 > - We are actively working on deploying the pipeline via containers (Docker, Singularity)!
 
 
-#### For 🍎 macOS
-
+##### For 🍎 macOS
 **Step 1:** Create the QIIME 2 environment manually:
 
 ```bash
@@ -83,19 +94,18 @@ conda env list | grep rachis-qiime2-2026.4
 
 ```bash
 nextflow run main.nf \
-    --pipeline_type ssu \
+    --pipeline_type <ssu|ess> \
     --qiime_conda_env /path/to/conda/envs/rachis-qiime2-2026.4 \
     -profile local,conda
 ```
 
 
-#### For 🐧 Linux (auto-install)
-
+##### For 🐧 Linux (auto-install)
 On Linux, the pipeline will **automatically** create the QIIME 2 environment from the YAML files provided in the `assets/` folder. Simply point `--qiime_conda_env` to the YAML file:
 
 ```bash
 nextflow run main.nf \
-    --pipeline_type ssu \
+    --pipeline_type <ssu|ess> \
     --qiime_conda_env assets/rachis-qiime2-linux-64-conda.yml \
     -profile local,conda
 ```
@@ -110,46 +120,24 @@ cd RESCRIPt
 pip install .
 ```
 
+
 ---
+## Usage
 
-## Quick start
-
-**All databases:**
+### Basic Usage
 ```bash
-nextflow run main.nf --pipeline_type ssu -profile local,conda
-```
-
-**Multiple databases:**
-```bash
-nextflow run main.nf --pipeline_type ssu --ssu_databases silva,rdp -profile local,conda
-```
-
-**Single database:**
-```bash
-nextflow run main.nf --pipeline_type ssu --ssu_databases rdp -profile local,conda
-```
-
-**Skip classifiers:**
-```bash
-nextflow run main.nf --pipeline_type ssu \
-    --build_full_classifier false \
-    --build_amplicon_classifier false \
-    -profile local,docker
-```
-
-**Resume a previous run:**
-```bash
-nextflow run main.nf --pipeline_type ssu -profile local,conda -resume
+nextflow run main.nf --pipeline_type <ssu|ess> -profile <local,conda|cluster,conda>
 ```
 
 **Show help:**
 ```bash
-nextflow run main.nf --help
+nextflow run main.nf --help         # Global options
+nextflow run main.nf --help ssu     # SSU workflow options
+nextflow run main.nf --help ess     # ESS workflow options
 ```
 
----
-
-## Usage
+> [!IMPORTANT]
+> For detailed information on individual workflows, please refer to the [SSU README](docs/ssu_README.md) and [ESS README](docs/ess_README.md) documents.
 
 ### Pipeline Types
 
@@ -158,24 +146,25 @@ nextflow run main.nf --help
 | `ssu` | Build Naive Bayes classifiers from SSU rRNA gene reference databases (SILVA, GTDB, RDP) |
 | `ess` | Build classifiers using iterative `extract-seq-segments` approach (under development) |
 
-### Profiles
 
+### Profiles
 Combine an executor profile with an engine profile:
 
 | Executor | Engine | Usage | Description |
 |----------|--------|-------|-------------|
-| `local` | `docker` | `-profile local,docker` | Run locally with Docker (recommended for macOS/Linux desktops) |
 | `local` | `conda` | `-profile local,conda` | Run locally with Conda |
 | `cluster` | `conda` | `-profile cluster,conda` | Submit to SLURM HPC with Conda |
+| `local` | `docker` | `-profile local,docker` | Run locally with Docker (recommended for macOS/Linux desktops) |
 
-### Parameters
+> [!NOTE]
+> Docker support is not currently available; but it is planned for a future release.
+
+
+### Global Parameters
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--pipeline_type` | — | Required. `ssu` or `ess` |
-| `--ssu_databases` | `silva,gtdb,rdp` | Databases to build classifiers from |
-| `--build_full_classifier` | `true` | Build full-length reference classifier |
-| `--build_amplicon_classifier` | `true` | Build amplicon-specific classifier |
 | `--qiime_conda_env` | YAML in assets/ | Path to existing QIIME 2 conda environment (for conda profile) |
 | `--outdir` | `results` | Output directory |
 | `--max_memory` | `16.GB` | Max memory per process |
@@ -184,29 +173,11 @@ Combine an executor profile with an engine profile:
 | `--help` | `false` | Show help message |
 
 
-> [!WARNING]
-> The `ess` pipeline is currently **under active development** and is not yet available.
-> The relevant code has been commented out in `main.nf`:
-> ```nextflow
-> // include { ESS } from './subworkflows/ESS/ess.nf'
-> ```
-> Only `--pipeline_type ssu` is supported at this time.
-
-*Note: the `ess` pipeline is currently in alpha development. You'll have to provide files using the `params.segseqs`, `params.seqs`, and `params.taxa` parameters in the config file.*
-
 ---
-
 ## Cite
 If you make use of this pipeline please cite RESCRIPt:
 
 - Michael S Robeson II, Devon R O'Rourke, Benjamin D Kaehler, Michal Ziemski, Matthew R Dillon, Jeffrey T Foster, Nicholas A Bokulich. (2021) RESCRIPt: Reproducible sequence taxonomy reference database management. PLoS Computational Biology 17 (11): e1009581. doi: [10.1371/journal.pcbi.1009581](http://dx.doi.org/10.1371/journal.pcbi.1009581). [GitHub](https://github.com/bokulich-lab/RESCRIPt).
-
-Please be sure to cite the following as well:
-
-- **If using the SILVA data** : Versions are released under different licenses. Refer to the [current SILVA release license information](https://www.arb-silva.de/silva-license-information/) for more details. [How to cite SILVA](https://www.arb-silva.de/contact/).
-- **If using GTDB data** : See the [GTDB "about" page](https://gtdb.ecogenomic.org/about) for more details. [How to cite GTDB](https://gtdb.ecogenomic.org/about).
-- **If using RDP data** : See the [main RDP GitHub page](https://github.com/rdpstaff) and the [RDP sourceforge page](https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/) for more details. Please cite the following RDP aritcles: [Wang *et al*. 2007](http://dx.doi.org/10.1128/AEM.00062-07) & [Wang *et al*. 2024](https://doi.org/10.1128/mra.01063-23).
-- **If using NCBI Genbank data** : See the [NCBI disclaimer and copyright notice](https://www.ncbi.nlm.nih.gov/home/about/policies/) for more details. [How to cite NCBI](https://support.nlm.nih.gov/knowledgebase/article/KA-03391/en-us).
 
 ---
 

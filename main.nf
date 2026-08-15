@@ -150,7 +150,7 @@ workflow {
                 --ess.extract_min_length    Minimum extracted segment length [default: ${params.ess.extract_min_length}]
                 --ess.extract_max_length    Maximum extracted segment length [default: ${params.ess.extract_max_length ?: '0 (disabled)'}]
 
-            Output Naming:
+            Output:
                 --ess.db                    Database name for output files [default: ${params.ess.db}]
                 --ess.amp_seg               Amplicon segment name [default: ${params.ess.amp_seg}]
 
@@ -176,59 +176,30 @@ workflow {
             PR2 Parameters (when --ess.source pr2):
                 --ess.pr2_version           PR2 version [default: ${params.ess.pr2_version ?: 'latest'}]
 
-            Examples:
-                # Custom local files with 2 iterations:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source custom \\
-                    --ess.seqs sequences.qza \\
-                    --ess.taxa taxonomy.qza \\
-                    --ess.seqsegs segments.qza \\
-                    --ess.max_iter 2 \\
-                    -profile local,conda
+            Usage:
+                # Run ESS pipeline with custom input files:
+                    nextflow run main.nf --pipeline_type ess \\
+                        --ess.source custom \\
+                        --ess.seqs data/test_trnL_seqs.qza \\
+                        --ess.taxa data/test_trnL_taxa.qza \\
+                        --ess.seqsegs data/test_trnL_seeds.qza \\
+                        --ess.db trnL \\
+                        --ess.amp_seg trnLgh \\
+                        --ess.max_iter 2 \\
+                        --qiime_conda_env /path/to/rachis-qiime2-2026.4 \\
+                        -profile local,conda
 
-                # Download from NCBI (plant trnL) with primer extraction:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source ncbi \\
-                    --ess.ncbi_query '"txid35493"[ORGN] AND "trnL"[Gene]' \\
-                    --ess.fwd_primer GGGCAATCCTGAGCCAA \\
-                    --ess.rev_primer CCATTGAGTCTCTGCACCTATC \\
-                    --ess.max_iter 3 \\
-                    -profile local,conda
-
-                # Download from UNITE (fungal ITS) with primer extraction:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source unite \\
-                    --ess.unite_taxon_group fungi \\
-                    --ess.unite_cluster_id dynamic \\
-                    --ess.fwd_primer CTTGGTCATTTAGAGGAAGTAA \\
-                    --ess.rev_primer GCTGCGTTCTTCATCGATGC \\
-                    --ess.max_iter 2 \\
-                    -profile local,conda
-
-                # Download from MIDORI2 (COI barcoding) with primer extraction:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source midori2 \\
-                    --ess.midori2_target_gene COI \\
-                    --ess.fwd_primer GGWACWGGWTGAACWGTWTAYCCYCC \\
-                    --ess.rev_primer TANACYTCNGGRTGNCCRAARAAYCA \\
-                    --ess.max_iter 2 \\
-                    -profile local,conda
-
-                # Download from PR2 (protist ribosomal) with primer extraction:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source pr2 \\
-                    --ess.fwd_primer GTGYCAGCMGCCGCGGTAA \\
-                    --ess.rev_primer GGACTACNVGGGTWTCTAAT \\
-                    --ess.max_iter 2 \\
-                    -profile local,conda
-
-                # Download from UNITE but provide pre-made seqsegs:
-                nextflow run main.nf --pipeline_type ess \\
-                    --ess.source unite \\
-                    --ess.unite_taxon_group fungi \\
-                    --ess.seqsegs my_its_segments.qza \\
-                    --ess.max_iter 2 \\
-                    -profile local,conda
+                # Run ESS pipeline with NCBI source and primer-based segment extraction:
+                    nextflow run main.nf --pipeline_type ess \\
+                        --ess.source ncbi \\
+                        --ess.ncbi_query 'trnL[Gene] AND Viridiplantae[Organism]' \\
+                        --ess.fwd_primer 'GGGCAATCCTGAGCCAA' \\
+                        --ess.rev_primer 'CCATTGAGTCTCTGCACCTATC' \\
+                        --ess.db trnL \\
+                        --ess.amp_seg trnLgh \\
+                        --ess.max_iter 2 \\
+                        --qiime_conda_env /path/to/rachis-qiime2-2026.4 \\
+                        -profile local,conda
             ===================================================================
             """.stripIndent()
             return

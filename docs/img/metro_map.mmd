@@ -34,11 +34,11 @@ end
 subgraph ssu_curate [SSU: Curate]
     %%metro entry: left | silva, gtdb, rdp
     %%metro exit: right | silva, gtdb, rdp
-    full_derep[Full Dereplicate]
-    full_cull[Full Cull]
+    full_derep[Dereplicate (Full)]
+    full_cull[Culling (Full)]
     amp_extract[Amplicon Region Extract]
-    amp_derep[Amplicon Dereplicate]
-    amp_cull[Amplicon Cull]
+    amp_derep[Dereplicate (Amplicon)]
+    amp_cull[Culling (Amplicon)]
     full_derep -->|silva,gtdb,rdp| full_cull
     full_derep -->|silva,gtdb,rdp| amp_extract
     amp_extract -->|silva,gtdb,rdp| amp_derep
@@ -47,8 +47,8 @@ end
 
 subgraph ssu_train [SSU: Train]
     %%metro entry: left | silva, gtdb, rdp
-    full_train[Full Train]
-    amp_train[Amplicon Train]
+    full_train[Train Classifier (Full)]
+    amp_train[Train Classifier (Amplicon)]
     ssu_out[ ]
     full_train -->|silva,gtdb,rdp| ssu_out
     amp_train -->|silva,gtdb,rdp| ssu_out
@@ -65,20 +65,20 @@ subgraph ess_acquire [ESS: Acquire]
     get_midori2 -->|midori2| extract_coll
 end
 
-subgraph ess_seed [ESS: Seed]
+subgraph ess_seed [ESS: Seed & Iterate]
     %%metro entry: left | custom, ncbi, unite, midori2, pr2
     %%metro exit: right | custom, ncbi, unite, midori2, pr2
+    %%metro group: Iterate Loop | extract_seq_segments, ess_derep, ess_cull
     extract_reads[Extract Reads]
     ess_setup[ESS Setup]
-    extract_reads -->|ncbi,unite,midori2,pr2| ess_setup
-end
-
-subgraph ess_iter [ESS: Iterate and Train]
-    %%metro entry: left | custom, ncbi, unite, midori2, pr2
-    %%metro group: Iterate Loop | extract_seq_segments, ess_derep, ess_cull
     extract_seq_segments[Extract Seq Segments]
     ess_derep[Dereplicate]
     ess_cull[Cull Seqs]
+    extract_reads -->|ncbi,unite,midori2,pr2| ess_setup
+end
+
+subgraph ess_iter [ESS: Train]
+    %%metro entry: left | custom, ncbi, unite, midori2, pr2
     ess_train[Train Classifier]
     ess_out[ ]
     extract_seq_segments -->|custom,ncbi,unite,midori2,pr2| ess_derep

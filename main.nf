@@ -158,6 +158,7 @@ workflow {
                 --ess.max_iter              Max iterations [default: ${params.ess.max_iter}]
                 --ess.perc_identity         Percent identity for segment extraction [default: ${params.ess.perc_identity}]
                 --ess.min_seq_len           Minimum sequence length [default: ${params.ess.min_seq_len}]
+                --ess.max_seq_len           Maximum sequence segment length [default: ${params.ess.max_seq_len}]
                 --ess.train_classifier      Train classifier from output [default: ${params.ess.train_classifier}]
 
             NCBI Parameters (when --ess.source ncbi):

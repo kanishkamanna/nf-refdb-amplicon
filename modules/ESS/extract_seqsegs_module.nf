@@ -9,7 +9,7 @@
 process ESS_EXTRACT_READS {
 
     tag "Extracting initial sequence segments via primer search"
-    label 'ess_iterate'
+    label 'ess_extseqsegs'
 
     publishDir "${params.outdir}/ess/initial_segments", mode: params.publish_dir_mode
 

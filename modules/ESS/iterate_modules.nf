@@ -45,6 +45,8 @@ with open('state.json', 'w') as f:
  ----------------------------------------------------------------------------------------
  */
 
+ // TODO: Add dereplicate step before ESS_EXTRACT_READS to improve iteration performance
+
 process ESS_ITERATE {
 
     tag "ESS iteration ${task.index}"
@@ -91,6 +93,7 @@ process ESS_ITERATE {
         '--i-reference-segment-sequences', seqsegs_path,
         '--p-perc-identity', '${params.ess.perc_identity}',
         '--p-min-seq-len', '${params.ess.min_seq_len}',
+        '--p-max-seq-len', '${params.ess.max_seq_len}',
         '--p-threads', '${task.cpus}',
         '--o-extracted-sequence-segments', f'{db}_{amp_seg}_matched_seqs.qza',
         '--o-unmatched-sequences', f'{db}_{amp_seg}_unmatched_seqs.qza',

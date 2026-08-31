@@ -248,6 +248,7 @@ When `--ess.source` is *NOT* `custom` and `--ess.seqsegs` is *NOT* provided, the
 | `--ess.max_iter` | `2` | Maximum number of iterations |
 | `--ess.perc_identity` | `0.7` | Percent identity for segment extraction |
 | `--ess.min_seq_len` | `10` | Minimum sequence length |
+| `--ess.max_seq_len` | `50000` | Maximum sequence segment length |
 | `--ess.train_classifier` | `true` | Train classifier from output |
 
 > [!TIP]

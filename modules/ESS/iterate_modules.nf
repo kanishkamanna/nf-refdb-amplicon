@@ -106,7 +106,7 @@ process ESS_ITERATE {
         'qiime', 'rescript', 'dereplicate',
         '--i-sequences', f'{db}_{amp_seg}_matched_seqs.qza',
         '--i-taxa', ref_taxa,
-        '--p-mode', 'uniq',
+        '--p-mode', '${params.derep.mode}',
         '--p-threads', '${task.cpus}',
         '--o-dereplicated-sequences', f'{db}_{amp_seg}_derep_seqs.qza',
         '--o-dereplicated-taxa', f'{db}_{amp_seg}_derep_taxa.qza'
@@ -118,8 +118,8 @@ process ESS_ITERATE {
         'qiime', 'rescript', 'cull-seqs',
         '--i-sequences', f'{db}_{amp_seg}_derep_seqs.qza',
         '--p-n-jobs', '${task.cpus}',
-        '--p-num-degenerates', '5',
-        '--p-homopolymer-length', '8',
+        '--p-num-degenerates', '${params.cull.degen}',
+        '--p-homopolymer-length', '${params.cull.hpoly}',
         '--o-clean-sequences', f'{db}_{amp_seg}_culled_seqs.qza',
         '--verbose'
     ], check=True)

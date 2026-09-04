@@ -7,9 +7,10 @@
 include { ESS_GET_NCBI_DATA    } from '../../modules/ESS/ncbi_module.nf'
 include { ESS_GET_UNITE_DATA   } from '../../modules/ESS/unite_module.nf'
 include { ESS_GET_MIDORI2_DATA } from '../../modules/ESS/midor2_module.nf'
-include { ESS_GET_PR2_DATA     } from '../../modules/ESS/pr2_module.nf'
-include { ESS_EXTRACT_READS    } from '../../modules/ESS/extract_seqsegs_module.nf'
 include { ESS_EXTRACT_FROM_COLLECTION } from '../../modules/ESS/extract_collect_module.nf'
+include { ESS_GET_PR2_DATA     } from '../../modules/ESS/pr2_module.nf'
+include { DEREP as ESS_DEREP   } from '../../modules/SSU/base_modules.nf'
+include { ESS_EXTRACT_READS    } from '../../modules/ESS/extract_seqsegs_module.nf'
 include { ESS_SETUP            } from '../../modules/ESS/iterate_modules.nf'
 include { ESS_ITERATE          } from '../../modules/ESS/iterate_modules.nf'
 include { ESS_TRAIN_CLASSIFIER } from '../../modules/ESS/train_classifier_module.nf'
@@ -95,6 +96,26 @@ workflow ESS {
     }
 
     // ======================================================================
+    // Dereplicate acquired reference sequences
+    // ======================================================================
+
+    // Wrap flat ESS channels into the tuple format that DEREP expects: tuple(db, amp_reg, path)
+    ch_derep_seqs_in = ch_ref_seqs.map { seqs ->
+        tuple(params.ess.db, 'full', seqs)
+    }
+
+    ch_derep_taxa_in = ch_ref_taxa.map { taxa ->
+        tuple(params.ess.db, 'full', taxa)
+    }
+
+    ESS_DEREP(ch_derep_seqs_in, ch_derep_taxa_in)
+
+    // Unwrap the tupled DEREP outputs back to flat paths for downstream ESS processes that expect plain path channels.
+    // This adaptor will be redesigned/changed once ESS processes are updated to accept tupled channels.
+    ch_derep_seqs = ESS_DEREP.out.derep_seqs.map { _db, _amp_reg, seqs -> seqs }
+    ch_derep_taxa = ESS_DEREP.out.derep_taxa.map { _db, _amp_reg, taxa -> taxa }
+
+    // ======================================================================
     // Handle sequence segments
     // ======================================================================
 
@@ -131,7 +152,7 @@ workflow ESS {
     // Seed the ESS iteration loop
     // ======================================================================
 
-    ESS_SETUP(ch_seqsegs, ch_ref_seqs, ch_ref_taxa)
+    ESS_SETUP(ch_seqsegs, ch_derep_seqs, ch_derep_taxa)
 
     // ======================================================================
     // Iterative ESS loop via topic channel

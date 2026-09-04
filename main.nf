@@ -226,6 +226,11 @@ workflow {
         Output:
             --outdir                Output directory [default: ${params.outdir}]
 
+        Dereplication/Culling Settings:
+            --derep.mode            Dereplication mode: 'uniq' or 'abund' [default: ${params.derep.mode}]
+            --cull.degen            Cull degenerate sequences [default: ${params.cull.degen}]
+            --cull.hpoly            Cull homopolymer sequences [default: ${params.cull.hpoly}]
+
         Resource limits:
             --max_memory            Max memory per process [default: ${params.max_memory}]
             --max_cpus              Max CPUs per process [default: ${params.max_cpus}]

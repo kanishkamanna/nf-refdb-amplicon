@@ -167,6 +167,9 @@ Combine an executor profile with an engine profile:
 | `--pipeline_type` | — | Required. `ssu` or `ess` |
 | `--qiime_conda_env` | YAML in assets/ | Path to existing QIIME 2 conda environment (for conda profile) |
 | `--outdir` | `results` | Output directory |
+| `--derep.mode` | `uniq` | Dereplication mode: 'uniq' or 'abund' |
+| `--cull.degen` | `5` | Cull degenerate sequences (threshold) |
+| `--cull.hpoly` | `8` | Cull homopolymer sequences (threshold) |
 | `--max_memory` | `16.GB` | Max memory per process |
 | `--max_cpus` | `4` | Max CPUs per process |
 | `--max_time` | `48.h` | Max time per process |

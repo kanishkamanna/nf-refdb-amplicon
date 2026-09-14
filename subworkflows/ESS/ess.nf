@@ -125,7 +125,7 @@ workflow ESS {
 
     } else if (params.ess.fwd_primer && params.ess.rev_primer) {
         // Generate initial segments via primer extraction from downloaded data
-        ESS_EXTRACT_READS(ch_ref_seqs)
+        ESS_EXTRACT_READS(ch_derep_seqs)
         ch_seqsegs = ESS_EXTRACT_READS.out.seqsegs
 
     } else {

@@ -45,14 +45,12 @@ with open('state.json', 'w') as f:
  ----------------------------------------------------------------------------------------
  */
 
- // TODO: Add dereplicate step before ESS_EXTRACT_READS to improve iteration performance
-
 process ESS_ITERATE {
 
     tag "ESS iteration ${task.index}"
     label 'ess_iterate'
 
-    publishDir "${params.outdir}/ess/iterations", mode: params.publish_dir_mode, saveAs: { filename -> "iter_${task.index}/${filename}" }
+    publishDir "${params.outdir}/ess/", mode: params.publish_dir_mode
 
     input:
     path state_json
@@ -60,8 +58,8 @@ process ESS_ITERATE {
 
     output:
     path "state.json", topic: 'ess_iteration'
-    path "*_culled_seqs.qza", emit: culled_seqs
-    path "*_derep_taxa.qza", emit: derep_taxa
+    path "iter_*/*_culled_seqs.qza", emit: culled_seqs
+    path "iter_*/*_derep_taxa.qza", emit: derep_taxa
     path "versions.yml", emit: versions
 
     script:
@@ -83,6 +81,10 @@ process ESS_ITERATE {
     db = '${params.ess.db}'
     amp_seg = '${params.ess.amp_seg}'
 
+    # Create iteration subdirectory
+    iter_dir = f'iter_{step}'
+    os.makedirs(iter_dir, exist_ok=True)
+
     print(f"=== ESS Iteration {step} ===", flush=True)
 
     # Step 1: Extract sequence segments
@@ -95,8 +97,8 @@ process ESS_ITERATE {
         '--p-min-seq-len', '${params.ess.min_seq_len}',
         '--p-max-seq-len', '${params.ess.max_seq_len}',
         '--p-threads', '${task.cpus}',
-        '--o-extracted-sequence-segments', f'{db}_{amp_seg}_matched_seqs.qza',
-        '--o-unmatched-sequences', f'{db}_{amp_seg}_unmatched_seqs.qza',
+        '--o-extracted-sequence-segments', f'{iter_dir}/{db}_{amp_seg}_matched_seqs.qza',
+        '--o-unmatched-sequences', f'{iter_dir}/{db}_{amp_seg}_unmatched_seqs.qza',
         '--verbose'
     ], check=True)
 
@@ -104,30 +106,30 @@ process ESS_ITERATE {
     print("Step 2: Dereplicating...", flush=True)
     subprocess.run([
         'qiime', 'rescript', 'dereplicate',
-        '--i-sequences', f'{db}_{amp_seg}_matched_seqs.qza',
+        '--i-sequences', f'{iter_dir}/{db}_{amp_seg}_matched_seqs.qza',
         '--i-taxa', ref_taxa,
         '--p-mode', '${params.derep.mode}',
         '--p-threads', '${task.cpus}',
-        '--o-dereplicated-sequences', f'{db}_{amp_seg}_derep_seqs.qza',
-        '--o-dereplicated-taxa', f'{db}_{amp_seg}_derep_taxa.qza'
+        '--o-dereplicated-sequences', f'{iter_dir}/{db}_{amp_seg}_derep_seqs.qza',
+        '--o-dereplicated-taxa', f'{iter_dir}/{db}_{amp_seg}_derep_taxa.qza'
     ], check=True)
 
     # Step 3: Cull
     print("Step 3: Culling sequences...", flush=True)
     subprocess.run([
         'qiime', 'rescript', 'cull-seqs',
-        '--i-sequences', f'{db}_{amp_seg}_derep_seqs.qza',
+        '--i-sequences', f'{iter_dir}/{db}_{amp_seg}_derep_seqs.qza',
         '--p-n-jobs', '${task.cpus}',
         '--p-num-degenerates', '${params.cull.degen}',
         '--p-homopolymer-length', '${params.cull.hpoly}',
-        '--o-clean-sequences', f'{db}_{amp_seg}_culled_seqs.qza',
+        '--o-clean-sequences', f'{iter_dir}/{db}_{amp_seg}_culled_seqs.qza',
         '--verbose'
     ], check=True)
 
     # Update state - point seqsegs_path to THIS iteration's culled seqs
     new_state = {
         'step': step,
-        'seqsegs_path': os.path.abspath(f'{db}_{amp_seg}_culled_seqs.qza'),
+        'seqsegs_path': os.path.abspath(f'{iter_dir}/{db}_{amp_seg}_culled_seqs.qza'),
         'ref_seqs': ref_seqs,
         'ref_taxa': ref_taxa
     }

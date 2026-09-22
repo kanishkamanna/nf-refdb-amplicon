@@ -1,0 +1,109 @@
+%%metro title: nf-refdb-amplicon
+%%metro mode: dark
+%%metro style: nfcore
+%%metro line: rdp | SSU: RDP | #f5c542
+%%metro line: silva | SSU: SILVA | #0570b0
+%%metro line: gtdb | SSU: GTDB | #2db572
+%%metro line: midori2 | ESS: MIDORI2 | #c792ea
+%%metro line: custom | ESS: Custom files | #9e9e9e
+%%metro line: ncbi | ESS: NCBI | #e63946
+%%metro line: unite | ESS: UNITE | #7b2d3b
+%%metro line: pr2 | ESS: PR2 | #00acc1
+%%metro files: custom_in | QZA | | banner
+%%metro files: ssu_out | QZA | | banner
+%%metro files: ess_out | QZA | | banner
+%%metro line_order: span
+%%metro compact_offsets: true
+%%metro grid: ssu_acquire | 0,0
+%%metro grid: ssu_curate | 1,0
+%%metro grid: ssu_train | 2,0
+%%metro grid: ess_acquire | 0,1
+%%metro grid: ess_seed | 1,1
+%%metro grid: ess_iter | 2,1
+
+graph LR
+
+subgraph ssu_acquire [SSU: Acquire]
+    %%metro exit: right | silva, gtdb, rdp
+    get_silva[Get SILVA]
+    get_gtdb[Get GTDB]
+    get_rdp[Get RDP]
+    import_rdp[Import RDP]
+    get_rdp -->|rdp| import_rdp
+end
+
+subgraph ssu_curate [SSU: Curate]
+    %%metro entry: left | silva, gtdb, rdp
+    %%metro exit: right | silva, gtdb, rdp
+    full_derep[Dereplicate (Full)]
+    full_cull[Culling (Full)]
+    amp_extract[Amplicon Region Extract]
+    amp_derep[Dereplicate (Amplicon)]
+    amp_cull[Culling (Amplicon)]
+    full_derep -->|silva,gtdb,rdp| full_cull
+    full_derep -->|silva,gtdb,rdp| amp_extract
+    amp_extract -->|silva,gtdb,rdp| amp_derep
+    amp_derep -->|silva,gtdb,rdp| amp_cull
+end
+
+subgraph ssu_train [SSU: Train]
+    %%metro entry: left | silva, gtdb, rdp
+    full_train[Train Classifier (Full)]
+    amp_train[Train Classifier (Amplicon)]
+    ssu_out[ ]
+    full_train -->|silva,gtdb,rdp| ssu_out
+    amp_train -->|silva,gtdb,rdp| ssu_out
+end
+
+subgraph ess_acquire [ESS: Acquire]
+    %%metro exit: right | custom, ncbi, unite, midori2, pr2
+    custom_in[ ]
+    get_ncbi[Get NCBI]
+    get_unite[Get UNITE]
+    get_midori2[Get MIDORI2]
+    extract_coll[Extract Artifacts]
+    get_pr2[Get PR2]
+    get_midori2 -->|midori2| extract_coll
+end
+
+subgraph ess_seed [ESS: Curate & Iterate]
+    %%metro entry: left | custom, ncbi, unite, midori2, pr2
+    %%metro exit: right | custom, ncbi, unite, midori2, pr2
+    %%metro group: Iterate Loop | extract_seq_segments, ess_derep, ess_cull
+    derep_full[Dereplicate (Full)]
+    extract_reads[Extract Initial Reads]
+    ess_setup[Seed Iteration]
+    extract_seq_segments[Extract Seq Segments]
+    ess_derep[Dereplicate]
+    ess_cull[Culling]
+    derep_full -->|custom,ncbi,unite,midori2,pr2| extract_reads
+    extract_reads -->|ncbi,unite,midori2,pr2| ess_setup
+end
+
+
+subgraph ess_iter [ESS: Train]
+    %%metro entry: left | custom, ncbi, unite, midori2, pr2
+    ess_train[Train Classifier]
+    ess_out[ ]
+    extract_seq_segments -->|custom,ncbi,unite,midori2,pr2| ess_derep
+    ess_derep -->|custom,ncbi,unite,midori2,pr2| ess_cull
+    ess_cull -->|custom,ncbi,unite,midori2,pr2| ess_train
+    ess_train -->|custom,ncbi,unite,midori2,pr2| ess_out
+end
+
+%% inter-section edges
+%% inter-section edges
+get_silva -->|silva| full_derep
+get_gtdb -->|gtdb| full_derep
+import_rdp -->|rdp| full_derep
+full_cull -->|silva,gtdb,rdp| full_train
+amp_cull -->|silva,gtdb,rdp| amp_train
+custom_in -->|custom| derep_full
+get_ncbi -->|ncbi| derep_full
+get_unite -->|unite| derep_full
+extract_coll -->|midori2| derep_full
+get_pr2 -->|pr2| derep_full
+derep_full -->|ncbi,unite,midori2,pr2| extract_reads
+derep_full -->|custom| ess_setup
+extract_reads -->|ncbi,unite,midori2,pr2| ess_setup
+ess_setup -->|custom,ncbi,unite,midori2,pr2| extract_seq_segments

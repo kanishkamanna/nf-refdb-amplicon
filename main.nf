@@ -12,7 +12,6 @@
 */
 
 nextflow.enable.dsl = 2
-//nextflow.preview.recursion=true
 
 /*
 ========================================================================================
@@ -21,10 +20,8 @@ nextflow.enable.dsl = 2
 */
 
 include { SSU } from './subworkflows/SSU/ssu.nf'
-//include { ESS } from './subworkflows/ESS/ess.nf'
+include { ESS } from './subworkflows/ESS/ess.nf'
 
-// ESS subworkflow is currently under active development and not yet available.
-// Uncomment the line below once the ESS pipeline is ready.
 
 /*
 ========================================================================================
@@ -59,24 +56,158 @@ workflow {
     """.stripIndent()
 
 
-    // nf-refdb-amplicon help message
+    // Help messages
     if (params.help) {
+
+                // --help ssu
+        if (params.help == 'ssu') {
+            log.info """
+            ===================================================================
+            SSU Pipeline Help (--pipeline_type ssu)
+            ===================================================================
+
+            The SSU pipeline builds reference databases for Small Subunit
+            ribosomal RNA (16S/18S) from supported public repositories.
+
+            Usage:
+                nextflow run main.nf --pipeline_type ssu [options] -profile <local,docker|local,conda>
+
+            SSU Parameters:
+                --ssu_databases             Databases to build (comma-separated) [default: silva,rdp,gtdb]
+                                            Available: silva, rdp, gtdb
+                --build_full_classifier     Build full-length classifier [default: true]
+                --build_amplicon_classifier Build amplicon classifier [default: true]
+
+            Primer Pairs:
+                --primer_pairs              List of primer pairs for amplicon region extraction [default: null]
+                                            Format: [[name, forward_primer, reverse_primer], ...]
+
+                                            Do not use 'full' as a primer pair name — it is reserved.
+
+                                            Note: Some primer-pair combinations may not work if a
+                                            primer is towards the end of the full-length SSU sequence,
+                                            as the primer sequence may not be present at that location.
+                                            For these cases, use the ESS pipeline instead.
+
+                                            Available primer pairs (uncomment in conf/ssu.config):
+                                              27F338R   : AGAGTTTGATYMTGGCTCAG / GCTGCCTCCCGTAGGAGT
+                                              27F534R   : AGAGTTTGATYMTGGCTCAG / ATTACCGCGGCTGCTGG
+                                              357wF805R : CCTACGGGNGGCWGCAG    / GACTACHVGGGTATCTAATCC
+                                              357wF806R : CCTACGGGNGGCWGCAG    / GGACTACHVGGGTWTCTAAT
+                                              515F806R  : GTGYCAGCMGCCGCGGTAA  / GGACTACNVGGGTWTCTAAT
+                                              515F926R  : GTGYCAGCMGCCGCGGTAA  / CCGYCAATTYMTTTRAGTTT
+                                              515F944R  : GTGCCAGCMGCCGCGGTAA  / GAATTAAACCACATGCTC
+                                              939F1378R : GAATTGACGGGGGCCCGCACAAG / CGGTGTGTACAAGGCCCGGGAACG
+
+            Examples:
+                # Build RDP and GTDB only, no classifiers:
+                nextflow run main.nf --pipeline_type ssu \\
+                    --ssu_databases 'rdp,gtdb' \\
+                    --build_full_classifier false \\
+                    --build_amplicon_classifier false \\
+                    -profile local,conda
+
+                # Build all databases with default amplicon classifier (515F806R):
+                nextflow run main.nf --pipeline_type ssu \\
+                    --ssu_databases 'silva,rdp,gtdb' \\
+                    -profile local,conda
+
+                # To change primer pairs, edit conf/ssu.config directly
+            ===================================================================
+            """.stripIndent()
+            return
+        }
+
+                // --help ess
+        if (params.help == 'ess') {
+            log.info """
+            ===================================================================
+            ESS Pipeline Help (--pipeline_type ess)
+            ===================================================================
+
+            The ESS pipeline performs iterative Evaluate, Select, Subset
+            curation of reference sequences. Supports custom user files or
+            downloading from public databases via RESCRIPt.
+
+            Usage:
+                nextflow run main.nf --pipeline_type ess [options] -profile <local,conda|cluster,conda>
+
+            Data Source:
+                --ess.source                Data source [default: ${params.ess.source}]
+                                            Options: custom, ncbi, unite, midori2, pr2
+
+            Custom Input (when --ess.source custom):
+                --ess.seqs                  Path to sequences (.qza) [required]
+                --ess.taxa                  Path to taxonomy (.qza) [required]
+                --ess.seqsegs               Path to sequence segments (.qza) [required]
+
+            Primer-Based Segment Extraction:
+                When --ess.source is not 'custom' and --ess.seqsegs is not provided,
+                the pipeline generates initial segments using primer extraction.
+
+                --ess.fwd_primer            Forward primer sequence (5'->3') [default: ${params.ess.fwd_primer ?: 'null (required if no seqsegs)'}]
+                --ess.rev_primer            Reverse primer sequence (5'->3') [default: ${params.ess.rev_primer ?: 'null (required if no seqsegs)'}]
+                --ess.extract_min_length    Minimum extracted segment length [default: ${params.ess.extract_min_length}]
+                --ess.extract_max_length    Maximum extracted segment length [default: ${params.ess.extract_max_length ?: '0 (disabled)'}]
+
+            Output:
+                --ess.db                    Database name for output files [default: ${params.ess.db}]
+                --ess.amp_seg               Amplicon segment name [default: ${params.ess.amp_seg}]
+
+            ESS Iteration Parameters:
+                --ess.max_iter              Max iterations [default: ${params.ess.max_iter}]
+                --ess.perc_identity         Percent identity for segment extraction [default: ${params.ess.perc_identity}]
+                --ess.min_seq_len           Minimum sequence length [default: ${params.ess.min_seq_len}]
+                --ess.max_seq_len           Maximum sequence segment length [default: ${params.ess.max_seq_len}]
+                --ess.train_classifier      Train classifier from output [default: ${params.ess.train_classifier}]
+
+            NCBI Parameters (when --ess.source ncbi):
+                --ess.ncbi_query            NCBI Entrez query string [required]
+
+            UNITE Parameters (when --ess.source unite):
+                --ess.unite_version         UNITE version [default: ${params.ess.unite_version}]
+                --ess.unite_taxon_group     Taxon group: fungi, eukaryotes [default: ${params.ess.unite_taxon_group}]
+                --ess.unite_cluster_id      Cluster ID threshold [default: ${params.ess.unite_cluster_id}]
+                --ess.unite_singletons      Include singletons [default: ${params.ess.unite_singletons}]
+
+            MIDORI2 Parameters (when --ess.source midori2):
+                --ess.midori2_target_gene   Target gene (COI, 12S, 16S, etc.) [default: ${params.ess.midori2_target_gene}]
+                --ess.midori2_version       MIDORI2 version [default: ${params.ess.midori2_version ?: 'latest'}]
+
+            PR2 Parameters (when --ess.source pr2):
+                --ess.pr2_version           PR2 version [default: ${params.ess.pr2_version ?: 'latest'}]
+
+            Usage:
+                # Run ESS pipeline with custom input files:
+                    nextflow run main.nf --pipeline_type ess \\
+                        --ess.source custom \\
+                        --ess.seqs data/test_trnL_seqs.qza \\
+                        --ess.taxa data/test_trnL_taxa.qza \\
+                        --ess.seqsegs data/test_trnL_seeds.qza \\
+                        --ess.db trnL \\
+                        --ess.amp_seg trnLgh \\
+                        --ess.max_iter 2 \\
+                        --qiime_conda_env /path/to/rachis-qiime2-2026.4 \\
+                        -profile local,conda
+
+                # Run ESS pipeline with NCBI source and primer-based segment extraction:
+                    nextflow run main.nf --pipeline_type ess \\
+                        --ess.source ncbi \\
+                        --ess.ncbi_query 'trnL[Gene] AND Viridiplantae[Organism]' \\
+                        --ess.fwd_primer 'GGGCAATCCTGAGCCAA' \\
+                        --ess.rev_primer 'CCATTGAGTCTCTGCACCTATC' \\
+                        --ess.db trnL \\
+                        --ess.amp_seg trnLgh \\
+                        --ess.max_iter 2 \\
+                        --qiime_conda_env /path/to/rachis-qiime2-2026.4 \\
+                        -profile local,conda
+            ===================================================================
+            """.stripIndent()
+            return
+        }
+
+        // --help (general)
         log.info """
-        ===================================================================
-
-        ███╗  ██╗███████╗    ██████╗ ███████╗███████╗██████╗ ██████╗ 
-        ████╗ ██║██╔════╝    ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗
-        ██╔██╗██║█████╗  ─── ██████╔╝█████╗  █████╗  ██║  ██║██████╔╝
-        ██║╚████║██╔══╝      ██╔══██╗██╔══╝  ██╔══╝  ██║  ██║██╔══██╗
-        ██║ ╚███║██║         ██║  ██║███████╗██║     ██████╔╝██████╔╝
-        ╚═╝  ╚══╝╚═╝         ╚═╝  ╚═╝╚══════╝╚═╝     ╚═════╝ ╚═════╝ 
-         █████╗ ███╗   ███╗██████╗ ██╗     ██╗ ██████╗  ██████╗ ███╗  ██╗
-        ██╔══██╗████╗ ████║██╔══██╗██║     ██║██╔════╝ ██╔═══██╗████╗ ██║
-        ███████║██╔████╔██║██████╔╝██║     ██║██║      ██║   ██║██╔██╗██║
-        ██╔══██║██║╚██╔╝██║██╔═══╝ ██║     ██║██║      ██║   ██║██║╚████║
-        ██║  ██║██║ ╚═╝ ██║██║     ███████╗██║╚██████╗ ╚██████╔╝██║ ╚███║
-        ╚═╝  ╚═╝╚═╝     ╚═╝╚═╝     ╚══════╝╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚══╝
-
         ===================================================================
         nf-refdb-amplicon v${workflow.manifest.version}
         Nextflow pipeline for generating reference databases
@@ -90,15 +221,15 @@ workflow {
             --pipeline_type         Pipeline to run: 'ssu' or 'ess'
 
         Conda (required with conda profile):
-            --qiime_conda_env           Path to QIIME 2 conda environment or YAML file [default: ${params.qiime_conda_env}]
+            --qiime_conda_env       Path to QIIME 2 conda environment or YAML file [default: ${params.qiime_conda_env ?: 'null'}]
 
         Output:
             --outdir                Output directory [default: ${params.outdir}]
 
-        SSU pipeline (conf/ssu.config):
-            --ssu_databases             Databases to build [default: ${params.ssu_databases}]
-            --build_full_classifier     Build full-length classifier [default: ${params.build_full_classifier}]
-            --build_amplicon_classifier Build amplicon classifier [default: ${params.build_amplicon_classifier}]
+        Dereplication/Culling Settings:
+            --derep.mode            Dereplication mode: 'uniq' or 'abund' [default: ${params.derep.mode}]
+            --cull.degen            Cull degenerate sequences [default: ${params.cull.degen}]
+            --cull.hpoly            Cull homopolymer sequences [default: ${params.cull.hpoly}]
 
         Resource limits:
             --max_memory            Max memory per process [default: ${params.max_memory}]
@@ -110,24 +241,17 @@ workflow {
             -profile local,conda        Run locally with Conda
             -profile cluster,conda      Submit to SLURM HPC with Conda
 
+        Workflow-specific help:
+            --help ssu              Show SSU pipeline parameters
+            --help ess              Show ESS pipeline parameters
+
         Other:
             --help                  Show this help message
             -resume                 Resume previous run from cache
 
         Examples:
-            # Local with Docker (recommended):
-            nextflow run main.nf --pipeline_type ssu --ssu_databases rdp -profile local,docker
-
-            # Local with Conda:
-            nextflow run main.nf --pipeline_type ssu --ssu_databases rdp \\
-                --qiime_conda_env /path/to/env -profile local,conda
-
-            # HPC with all databases:
-            nextflow run main.nf --pipeline_type ssu --max_memory 64.GB --max_cpus 16 \\
-                -profile cluster,conda
-
-            # Multiple databases:
-            nextflow run main.nf --pipeline_type ssu --ssu_databases rdp,gtdb -profile local,docker
+            nextflow run main.nf --pipeline_type ssu -profile local,docker
+            nextflow run main.nf --pipeline_type ess -profile local,docker
 
         Documentation:
             https://github.com/mikerobeson/nf-refdb-amplicon
@@ -144,8 +268,13 @@ workflow {
             Valid options: "ssu" or "ess"
             
             Usage:
-              nextflow run main.nf --pipeline_type ssu -profile local
-              nextflow run main.nf --pipeline_type ess -profile local
+              nextflow run main.nf --pipeline_type ssu -profile local,docker
+              nextflow run main.nf --pipeline_type ess -profile local,docker
+
+            For help:
+              nextflow run main.nf --help
+              nextflow run main.nf --help ssu
+              nextflow run main.nf --help ess
             ==========================================================
         '''.stripIndent()
     }
@@ -154,8 +283,7 @@ workflow {
     if (params.pipeline_type == 'ssu') {
         SSU()
     } else if (params.pipeline_type == 'ess') {
-        //ESS()
-        error 'ESS pipeline is under development. Not yet available.'
+        ESS()
     } else {
         error """
             ==========================================================

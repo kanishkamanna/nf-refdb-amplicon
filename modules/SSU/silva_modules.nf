@@ -1,15 +1,8 @@
 /*
-========================================================================================
+----------------------------------------------------------------------------------------
     SILVA MODULES
-========================================================================================
-    Download and prepare SILVA SSU rRNA gene reference database.
 
-    SILVA provides comprehensive, quality-checked and regularly updated
-    ribosomal RNA sequence databases. This module downloads the specified
-    SILVA release and converts RNA sequences to DNA.
-
-    Citation: https://www.arb-silva.de/contact/
-    License:  https://www.arb-silva.de/silva-license-information/
+    Download and prepare SILVA SSU rRNA gene reference database
 ----------------------------------------------------------------------------------------
 */
 
@@ -44,9 +37,3 @@ process GET_SILVA {
     END_VERSIONS
     """
 }
-
-/*
-========================================================================================
-    THE END
-========================================================================================
-*/

@@ -1,16 +1,8 @@
 /*
-========================================================================================
-    RDP MODULES
-========================================================================================
-    Download and prepare RDP (Ribosomal Database Project) reference database.
+----------------------------------------------------------------------------------------
+    GET RDP
 
-    RDP provides ribosomal RNA gene sequence data and analysis tools.
-    Unlike SILVA and GTDB, RDP data is downloaded as flat files and
-    imported into QIIME 2 artifact format.
-
-    Citation: Wang et al. 2007 (doi:10.1128/AEM.00062-07)
-              Wang et al. 2024 (doi:10.1128/mra.01063-23)
-    Source:   https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/
+    Download RDP (Ribosomal Database Project) reference database
 ----------------------------------------------------------------------------------------
 */
 
@@ -47,6 +39,15 @@ with zipfile.ZipFile('RDPClassifier_16S_trainsetNo19_QiimeFormat.zip', 'r') as z
     """
 }
 
+
+
+/*
+----------------------------------------------------------------------------------------
+    IMPORT RDP
+
+    Imports RDP (Ribosomal Database Project) reference data
+----------------------------------------------------------------------------------------
+*/
 process IMPORT_RDP {
 
     tag 'Importing RDP data'
@@ -81,9 +82,3 @@ process IMPORT_RDP {
     END_VERSIONS
     """
 }
-
-/*
-========================================================================================
-    THE END
-========================================================================================
-*/
